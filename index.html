@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Responsive + iOS notch support. viewport-fit=cover lets us use safe-area insets. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <!-- iOS "Add to Home Screen" support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Skill Tracker" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Skill Tracker</title>
+  <style>
+/* styles.css — clean, modern dark theme for the Skill Tracker */
+
+:root {
+  --bg: #0d1117;
+  --bg-elevated: #161b22;
+  --bg-card: #161b22;
+  --bg-input: #0d1117;
+  --border: #283039;
+  --border-soft: #21262d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #2f81f7;
+  --accent-soft: rgba(47, 129, 247, 0.15);
+  --success: #3fb950;
+  --danger: #f85149;
+
+  /* status colours */
+  --st-not: #8b949e;
+  --st-learning: #d29922;
+  --st-practicing: #2f81f7;
+  --st-confident: #3fb950;
+
+  /* difficulty colours */
+  --diff-beginner: #3fb950;
+  --diff-intermediate: #d29922;
+  --diff-advanced: #f85149;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* Stop iOS from auto-resizing text on rotate */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.app-header {
+  max-width: 880px;
+  margin: 0 auto;
+  /* Add the notch / status-bar safe area on top + sides (iPhone) */
+  padding: calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 8px calc(16px + env(safe-area-inset-left));
+  position: sticky;
+  top: 0;
+  background: linear-gradient(var(--bg) 80%, rgba(13,17,23,0));
+  z-index: 10;
+}
+
+.header-top h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+.subtitle {
+  margin: 2px 0 16px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+/* Overall progress */
+.overall { margin-bottom: 12px; }
+.overall-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.overall-label { font-weight: 600; }
+.overall-pct {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.overall-meta {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Progress bars */
+.progress-track {
+  height: 8px;
+  background: var(--border-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+/* Next task */
+.next-task {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+  border-color: var(--accent-soft);
+}
+.next-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.next-text { font-weight: 600; }
+.next-task.flash { animation: flash 0.8s ease; }
+@keyframes flash {
+  0% { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  100% { border-color: var(--accent-soft); box-shadow: none; }
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.btn {
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  min-height: 44px; /* comfortable iPhone tap target */
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* remove 300ms tap delay on iOS */
+}
+.btn:hover { background: #1f2630; border-color: #3a434e; }
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #4a93f8; }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { border-color: var(--danger); }
+.btn.active { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+
+.search-row { margin-bottom: 8px; }
+.search-input,
+.text-input,
+.status-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  /* 16px is the magic number: iOS Safari zooms the page when you focus an
+     input smaller than 16px, which feels broken. Keep all inputs at 16px. */
+  font-size: 16px;
+  font-family: inherit;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.status-select {
+  /* keep the native dropdown chevron usable on the select */
+  -webkit-appearance: menulist;
+  appearance: menulist;
+}
+.search-input:focus,
+.text-input:focus,
+.status-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Main */
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 calc(16px + env(safe-area-inset-right)) 40px calc(16px + env(safe-area-inset-left));
+}
+
+/* Category */
+.category {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+.cat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.cat-header:hover { background: #1b212a; }
+.cat-caret {
+  transition: transform 0.2s;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.category.collapsed .cat-caret { transform: rotate(-90deg); }
+.cat-title-wrap { flex: 1; min-width: 0; }
+.cat-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.cat-goal {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.cat-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.cat-progress-bar {
+  width: 90px;
+  height: 6px;
+  background: var(--border-soft);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cat-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+.cat-pct {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-width: 34px;
+  text-align: right;
+}
+
+.cat-body {
+  border-top: 1px solid var(--border-soft);
+}
+.category.collapsed .cat-body { display: none; }
+
+/* Item */
+.item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.item:last-child { border-bottom: none; }
+.item.done .item-task { color: var(--text-muted); text-decoration: line-through; }
+.item.hidden { display: none; }
+
+.item-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.item-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 1px;
+  position: relative;
+  background: var(--bg-input);
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.item-check:checked {
+  background: var(--success);
+  border-color: var(--success);
+}
+.item-check:checked::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 3px;
+  width: 6px;
+  height: 12px;
+  border: solid #0d1117;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+.item-content { flex: 1; min-width: 0; }
+.item-task { font-size: 0.92rem; }
+
+.item-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.diff-Beginner { background: rgba(63,185,80,0.15); color: var(--diff-beginner); }
+.diff-Intermediate { background: rgba(210,153,34,0.15); color: var(--diff-intermediate); }
+.diff-Advanced { background: rgba(248,81,73,0.15); color: var(--diff-advanced); }
+
+.status-badge { border: 1px solid transparent; }
+.status-NotStarted { background: rgba(139,148,158,0.12); color: var(--st-not); }
+.status-Learning { background: rgba(210,153,34,0.15); color: var(--st-learning); }
+.status-Practicing { background: rgba(47,129,247,0.15); color: var(--st-practicing); }
+.status-Confident { background: rgba(63,185,80,0.15); color: var(--st-confident); }
+
+.btn-expand {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  min-height: 32px;
+  margin-left: auto;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.btn-expand:hover { color: var(--text); }
+
+/* Item details (notes, status, link) */
+.item-details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-soft);
+  display: grid;
+  gap: 8px;
+}
+.item-details.collapsed { display: none; }
+.field-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+  display: block;
+}
+.detail-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.detail-row > div { flex: 1; min-width: 160px; }
+.notes-input { min-height: 54px; resize: vertical; }
+.resource-link {
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-top: 4px;
+  word-break: break-all;
+  display: inline-block;
+}
+
+/* Focus mode */
+body.focus-mode .category { display: none; }
+body.focus-mode .category.focus-visible { display: block; }
+body.focus-mode .item:not(.focus-item) { display: none; }
+body.focus-mode .cat-body { display: block !important; }
+.focus-banner {
+  display: none;
+  max-width: 880px;
+  margin: 0 auto 12px;
+  padding: 10px 16px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+body.focus-mode .focus-banner { display: flex; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+  z-index: 50;
+  animation: toastIn 0.2s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.app-footer {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 16px calc(40px + env(safe-area-inset-bottom));
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.weekly-reset {
+  margin: 4px 16px 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 560px) {
+  .cat-goal { display: none; }
+  .cat-progress-bar { width: 56px; }
+  .overall-pct { font-size: 1.2rem; }
+  /* On phones, let the primary action span the row and others share evenly */
+  .controls { gap: 8px; }
+  #btnNext { flex: 1 0 100%; }
+  .controls .btn:not(#btnNext) { flex: 1 1 auto; }
+  .item-task { font-size: 0.95rem; }
+  .header-top h1 { font-size: 1.4rem; }
+}
+
+/* Respect users who reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-top">
+      <h1>Skill Tracker</h1>
+      <p class="subtitle">Your path from student to employable engineer</p>
+    </div>
+
+    <!-- Overall progress -->
+    <div class="overall card">
+      <div class="overall-row">
+        <span class="overall-label">Overall progress</span>
+        <span class="overall-pct" id="overallPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="overallFill" style="width:0%"></div>
+      </div>
+      <div class="overall-meta" id="overallMeta">0 of 0 tasks confident</div>
+    </div>
+
+    <!-- Next recommended task -->
+    <div class="next-task card" id="nextTaskCard">
+      <span class="next-label">Next recommended task</span>
+      <span class="next-text" id="nextTaskText">All done! 🎉</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="btnNext" class="btn btn-primary">What should I do next?</button>
+      <button id="btnFocus" class="btn">Focus Mode</button>
+      <button id="btnExport" class="btn">Export</button>
+      <button id="btnImport" class="btn">Import</button>
+      <button id="btnReset" class="btn btn-danger">Reset</button>
+      <input type="file" id="importFile" accept="application/json" hidden />
+    </div>
+    <div class="search-row">
+      <input type="search" id="searchInput" class="search-input" placeholder="Search tasks..." />
+    </div>
+  </header>
+
+  <main id="categories"></main>
+
+  <footer class="app-footer">
+    <p>Progress is saved automatically in this browser (localStorage). Use Export to back it up.</p>
+  </footer>
+
+  <!-- Toast for small confirmations -->
+  <div id="toast" class="toast" hidden></div>
+  <script>
+/*
+ * data.js
+ * -------
+ * The complete learning path for the Skill Tracker.
+ *
+ * The order of categories and the order of items inside each category
+ * defines the recommended learning sequence (first -> last). This order is
+ * used by the "What should I do next?" feature and "Focus Mode", so it should
+ * not be reordered casually.
+ *
+ * Each item has:
+ *   - task:       short description of the skill/task
+ *   - difficulty: "Beginner" | "Intermediate" | "Advanced"
+ *
+ * "type" on a category:
+ *   - "skills"   : normal learn-and-track items
+ *   - "project"  : a portfolio project (items are required features)
+ *   - "weekly"   : recurring weekly discipline checklist
+ *
+ * Item IDs are generated from category + item index at runtime (see app.js),
+ * so saved progress stays stable as long as the order here is preserved.
+ */
+
+const LEARNING_PATH = [
+  {
+    name: "1. Coding Fundamentals",
+    goal: "Become comfortable solving problems and writing code without relying on AI.",
+    type: "skills",
+    items: [
+      { task: "Python basics: variables, functions, loops, conditionals", difficulty: "Beginner" },
+      { task: "Data structures: lists, dictionaries, sets, tuples", difficulty: "Beginner" },
+      { task: "String manipulation", difficulty: "Beginner" },
+      { task: "File handling", difficulty: "Beginner" },
+      { task: "Error handling with try/except", difficulty: "Beginner" },
+      { task: "Classes and objects", difficulty: "Intermediate" },
+      { task: "Modules and packages", difficulty: "Intermediate" },
+      { task: "Virtual environments", difficulty: "Beginner" },
+      { task: "Reading documentation", difficulty: "Beginner" },
+      { task: "Debugging without AI", difficulty: "Intermediate" },
+      { task: "Writing clean functions", difficulty: "Intermediate" },
+      { task: "Explaining code out loud", difficulty: "Beginner" },
+      { task: "Git basics: add, commit, push, branch, merge", difficulty: "Beginner" },
+      { task: "GitHub basics", difficulty: "Beginner" },
+      { task: "Basic terminal commands", difficulty: "Beginner" },
+      { task: "Big O basics", difficulty: "Intermediate" },
+      { task: "Arrays/lists problems", difficulty: "Intermediate" },
+      { task: "Hash map problems", difficulty: "Intermediate" },
+      { task: "Two pointers problems", difficulty: "Intermediate" },
+      { task: "Stack and queue problems", difficulty: "Intermediate" },
+      { task: "Binary search basics", difficulty: "Intermediate" },
+      { task: "Recursion basics", difficulty: "Intermediate" },
+      { task: "Tree basics", difficulty: "Advanced" },
+      { task: "Graph basics", difficulty: "Advanced" }
+    ]
+  },
+  {
+    name: "2. SQL and Databases",
+    goal: "Understand how real applications store and retrieve data.",
+    type: "skills",
+    items: [
+      { task: "What relational databases are", difficulty: "Beginner" },
+      { task: "Tables, rows, columns", difficulty: "Beginner" },
+      { task: "Primary keys and foreign keys", difficulty: "Beginner" },
+      { task: "SELECT queries", difficulty: "Beginner" },
+      { task: "WHERE filters", difficulty: "Beginner" },
+      { task: "ORDER BY and LIMIT", difficulty: "Beginner" },
+      { task: "INSERT, UPDATE, DELETE", difficulty: "Beginner" },
+      { task: "JOINs", difficulty: "Intermediate" },
+      { task: "GROUP BY and aggregation", difficulty: "Intermediate" },
+      { task: "Database schema design", difficulty: "Intermediate" },
+      { task: "Index basics", difficulty: "Intermediate" },
+      { task: "PostgreSQL setup", difficulty: "Beginner" },
+      { task: "Connecting app code to PostgreSQL", difficulty: "Intermediate" },
+      { task: "Basic database migrations", difficulty: "Intermediate" },
+      { task: "Preventing SQL injection", difficulty: "Intermediate" },
+      { task: "Designing a schema for a real app", difficulty: "Advanced" }
+    ]
+  },
+  {
+    name: "3. Backend Engineering",
+    goal: "Build real APIs that can power applications.",
+    type: "skills",
+    items: [
+      { task: "REST API basics", difficulty: "Beginner" },
+      { task: "HTTP methods: GET, POST, PUT, PATCH, DELETE", difficulty: "Beginner" },
+      { task: "HTTP status codes", difficulty: "Beginner" },
+      { task: "Request and response structure", difficulty: "Beginner" },
+      { task: "JSON", difficulty: "Beginner" },
+      { task: "FastAPI or Express basics", difficulty: "Intermediate" },
+      { task: "Routing", difficulty: "Beginner" },
+      { task: "Controllers/services structure", difficulty: "Intermediate" },
+      { task: "Input validation", difficulty: "Intermediate" },
+      { task: "Error handling", difficulty: "Intermediate" },
+      { task: "Authentication basics", difficulty: "Intermediate" },
+      { task: "Password hashing", difficulty: "Intermediate" },
+      { task: "JWT authentication", difficulty: "Advanced" },
+      { task: "Environment variables", difficulty: "Beginner" },
+      { task: "Logging", difficulty: "Intermediate" },
+      { task: "API testing with Postman/Insomnia", difficulty: "Beginner" },
+      { task: "Unit testing", difficulty: "Intermediate" },
+      { task: "Integration testing", difficulty: "Advanced" },
+      { task: "CRUD app backend", difficulty: "Intermediate" },
+      { task: "Pagination", difficulty: "Intermediate" },
+      { task: "Search and filtering", difficulty: "Intermediate" },
+      { task: "Rate limiting basics", difficulty: "Advanced" },
+      { task: "Background jobs basics", difficulty: "Advanced" },
+      { task: "Caching basics with Redis", difficulty: "Advanced" }
+    ]
+  },
+  {
+    name: "4. Full-Stack Development",
+    goal: "Connect a frontend to a real backend.",
+    type: "skills",
+    items: [
+      { task: "TypeScript basics", difficulty: "Intermediate" },
+      { task: "React basics", difficulty: "Intermediate" },
+      { task: "Components and props", difficulty: "Beginner" },
+      { task: "State management", difficulty: "Intermediate" },
+      { task: "Forms", difficulty: "Intermediate" },
+      { task: "API calls from frontend", difficulty: "Intermediate" },
+      { task: "Loading states", difficulty: "Beginner" },
+      { task: "Error states", difficulty: "Beginner" },
+      { task: "Authentication flow in frontend", difficulty: "Advanced" },
+      { task: "Protected routes", difficulty: "Intermediate" },
+      { task: "Tailwind CSS basics", difficulty: "Beginner" },
+      { task: "Clean UI layout", difficulty: "Intermediate" },
+      { task: "Connecting frontend to backend", difficulty: "Intermediate" },
+      { task: "Deploying frontend", difficulty: "Intermediate" },
+      { task: "Handling environment variables in frontend", difficulty: "Intermediate" },
+      { task: "Building a full-stack CRUD app", difficulty: "Advanced" }
+    ]
+  },
+  {
+    name: "5. Cloud and Deployment",
+    goal: "Ship projects properly instead of only running them locally.",
+    type: "skills",
+    items: [
+      { task: "Cloud basics", difficulty: "Beginner" },
+      { task: "Linux basics", difficulty: "Beginner" },
+      { task: "SSH basics", difficulty: "Beginner" },
+      { task: "Environment variables in production", difficulty: "Intermediate" },
+      { task: "Docker basics", difficulty: "Intermediate" },
+      { task: "Dockerfile", difficulty: "Intermediate" },
+      { task: "Docker Compose", difficulty: "Intermediate" },
+      { task: "Containerising a backend app", difficulty: "Advanced" },
+      { task: "Deploying a backend app", difficulty: "Advanced" },
+      { task: "Deploying a frontend app", difficulty: "Intermediate" },
+      { task: "Managed database basics", difficulty: "Intermediate" },
+      { task: "AWS account setup", difficulty: "Beginner" },
+      { task: "AWS IAM basics", difficulty: "Intermediate" },
+      { task: "AWS EC2 basics", difficulty: "Intermediate" },
+      { task: "AWS S3 basics", difficulty: "Beginner" },
+      { task: "AWS RDS basics", difficulty: "Intermediate" },
+      { task: "AWS Lambda basics", difficulty: "Advanced" },
+      { task: "AWS CloudWatch basics", difficulty: "Intermediate" },
+      { task: "Domain/DNS basics", difficulty: "Intermediate" },
+      { task: "HTTPS basics", difficulty: "Intermediate" },
+      { task: "Production logs", difficulty: "Intermediate" },
+      { task: "Health check endpoint", difficulty: "Beginner" },
+      { task: "Monitoring basics", difficulty: "Intermediate" }
+    ]
+  },
+  {
+    name: "6. DevOps and Platform Skills",
+    goal: "Learn how professional teams build, test, deploy, and monitor software.",
+    type: "skills",
+    items: [
+      { task: "CI/CD basics", difficulty: "Intermediate" },
+      { task: "GitHub Actions basics", difficulty: "Intermediate" },
+      { task: "Running tests in CI", difficulty: "Intermediate" },
+      { task: "Linting in CI", difficulty: "Intermediate" },
+      { task: "Building Docker images in CI", difficulty: "Advanced" },
+      { task: "Deployment pipeline basics", difficulty: "Advanced" },
+      { task: "Staging vs production", difficulty: "Intermediate" },
+      { task: "Secrets management", difficulty: "Advanced" },
+      { task: "Rollbacks", difficulty: "Advanced" },
+      { task: "Infrastructure as Code basics", difficulty: "Advanced" },
+      { task: "Terraform basics", difficulty: "Advanced" },
+      { task: "Writing simple Terraform config", difficulty: "Advanced" },
+      { task: "Provisioning cloud infrastructure", difficulty: "Advanced" },
+      { task: "Monitoring and alerting basics", difficulty: "Intermediate" },
+      { task: "Reading production logs", difficulty: "Intermediate" },
+      { task: "Incident/debugging mindset", difficulty: "Intermediate" },
+      { task: "Writing technical documentation", difficulty: "Beginner" },
+      { task: "Architecture diagrams", difficulty: "Intermediate" }
+    ]
+  },
+  {
+    name: "7. Practical AI Engineering",
+    goal: "Build useful AI features into real software.",
+    type: "skills",
+    items: [
+      { task: "How LLM APIs work", difficulty: "Beginner" },
+      { task: "Prompt engineering basics", difficulty: "Beginner" },
+      { task: "Structured outputs", difficulty: "Intermediate" },
+      { task: "JSON mode/schema outputs", difficulty: "Intermediate" },
+      { task: "Tool calling/function calling", difficulty: "Advanced" },
+      { task: "Embeddings", difficulty: "Intermediate" },
+      { task: "Vector databases", difficulty: "Intermediate" },
+      { task: "Semantic search", difficulty: "Intermediate" },
+      { task: "RAG basics", difficulty: "Advanced" },
+      { task: "Document chunking", difficulty: "Intermediate" },
+      { task: "Retrieval quality", difficulty: "Advanced" },
+      { task: "Answer generation with citations", difficulty: "Advanced" },
+      { task: "AI evaluation basics", difficulty: "Advanced" },
+      { task: "Creating test cases for AI outputs", difficulty: "Intermediate" },
+      { task: "Hallucination handling", difficulty: "Advanced" },
+      { task: "Cost tracking", difficulty: "Intermediate" },
+      { task: "Rate limiting AI calls", difficulty: "Intermediate" },
+      { task: "Human-in-the-loop review", difficulty: "Intermediate" },
+      { task: "AI safety/guardrails basics", difficulty: "Advanced" },
+      { task: "Building an AI feature into a real app", difficulty: "Advanced" }
+    ]
+  },
+  {
+    name: "8. Portfolio Projects",
+    goal: "Build proof that I can code, deploy, and explain systems.",
+    type: "skills",
+    items: [
+      // Project 1: Full-stack Job Application Tracker
+      { task: "Project 1 — Job Tracker: User signup/login", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: PostgreSQL database", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: CRUD job applications", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: Status tracking", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: Notes", difficulty: "Beginner" },
+      { task: "Project 1 — Job Tracker: Search/filter", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: Dashboard stats", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: Frontend", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: Backend API", difficulty: "Intermediate" },
+      { task: "Project 1 — Job Tracker: Tests", difficulty: "Advanced" },
+      { task: "Project 1 — Job Tracker: Docker", difficulty: "Advanced" },
+      { task: "Project 1 — Job Tracker: Deployed version", difficulty: "Advanced" },
+      { task: "Project 1 — Job Tracker: README with screenshots", difficulty: "Beginner" },
+      { task: "Project 1 — Job Tracker: Architecture diagram", difficulty: "Intermediate" },
+      // Project 2: Cloud/DevOps Deployment Pipeline
+      { task: "Project 2 — DevOps Pipeline: Dockerised app", difficulty: "Intermediate" },
+      { task: "Project 2 — DevOps Pipeline: GitHub Actions CI/CD", difficulty: "Advanced" },
+      { task: "Project 2 — DevOps Pipeline: Automated tests", difficulty: "Intermediate" },
+      { task: "Project 2 — DevOps Pipeline: Cloud deployment", difficulty: "Advanced" },
+      { task: "Project 2 — DevOps Pipeline: Environment variables", difficulty: "Intermediate" },
+      { task: "Project 2 — DevOps Pipeline: Logging", difficulty: "Intermediate" },
+      { task: "Project 2 — DevOps Pipeline: Health check endpoint", difficulty: "Beginner" },
+      { task: "Project 2 — DevOps Pipeline: Basic monitoring", difficulty: "Intermediate" },
+      { task: "Project 2 — DevOps Pipeline: Terraform if possible", difficulty: "Advanced" },
+      { task: "Project 2 — DevOps Pipeline: README explaining deployment architecture", difficulty: "Intermediate" },
+      // Project 3: AI Study Assistant / RAG App
+      { task: "Project 3 — RAG App: Upload documents", difficulty: "Intermediate" },
+      { task: "Project 3 — RAG App: Chunk documents", difficulty: "Intermediate" },
+      { task: "Project 3 — RAG App: Generate embeddings", difficulty: "Intermediate" },
+      { task: "Project 3 — RAG App: Store in vector database", difficulty: "Intermediate" },
+      { task: "Project 3 — RAG App: Ask questions", difficulty: "Intermediate" },
+      { task: "Project 3 — RAG App: Retrieve relevant chunks", difficulty: "Advanced" },
+      { task: "Project 3 — RAG App: Answer with citations", difficulty: "Advanced" },
+      { task: "Project 3 — RAG App: Show limitations", difficulty: "Intermediate" },
+      { task: "Project 3 — RAG App: Evaluation test cases", difficulty: "Advanced" },
+      { task: "Project 3 — RAG App: Deployed version", difficulty: "Advanced" },
+      { task: "Project 3 — RAG App: README explaining AI pipeline", difficulty: "Intermediate" }
+    ]
+  },
+  {
+    name: "9. Interview Preparation",
+    goal: "Be ready for graduate/junior technical interviews.",
+    type: "skills",
+    items: [
+      { task: "Explain every project clearly", difficulty: "Intermediate" },
+      { task: "Explain auth flow", difficulty: "Intermediate" },
+      { task: "Explain database schema", difficulty: "Intermediate" },
+      { task: "Explain API design", difficulty: "Intermediate" },
+      { task: "Explain deployment process", difficulty: "Intermediate" },
+      { task: "Explain one hard bug and how it was fixed", difficulty: "Intermediate" },
+      { task: "Explain trade-offs", difficulty: "Advanced" },
+      { task: "Explain where AI was used and how outputs were verified", difficulty: "Intermediate" },
+      { task: "50 easy/medium coding problems", difficulty: "Advanced" },
+      { task: "Arrays pattern", difficulty: "Intermediate" },
+      { task: "Hash map pattern", difficulty: "Intermediate" },
+      { task: "Two pointers pattern", difficulty: "Intermediate" },
+      { task: "Stack/queue pattern", difficulty: "Intermediate" },
+      { task: "Binary search pattern", difficulty: "Intermediate" },
+      { task: "Recursion pattern", difficulty: "Advanced" },
+      { task: "Trees basics", difficulty: "Advanced" },
+      { task: "Graph basics", difficulty: "Advanced" },
+      { task: "Behavioural story: leadership", difficulty: "Beginner" },
+      { task: "Behavioural story: conflict", difficulty: "Beginner" },
+      { task: "Behavioural story: failure/mistake", difficulty: "Beginner" },
+      { task: "Behavioural story: learning fast", difficulty: "Beginner" },
+      { task: "Behavioural story: debugging under pressure", difficulty: "Beginner" }
+    ]
+  },
+  {
+    name: "10. Weekly Discipline Tracker",
+    goal: "Build consistency. Reset these each week using the button below.",
+    type: "weekly",
+    items: [
+      { task: "Solve at least 5 coding problems", difficulty: "Beginner" },
+      { task: "Make at least 5 GitHub commits", difficulty: "Beginner" },
+      { task: "Build or improve one project feature", difficulty: "Intermediate" },
+      { task: "Write one technical note in my own words", difficulty: "Beginner" },
+      { task: "Apply to at least 10 roles", difficulty: "Beginner" },
+      { task: "Post one LinkedIn update or project progress post", difficulty: "Beginner" },
+      { task: "Review what I learned this week", difficulty: "Beginner" },
+      { task: "Choose next week's focus", difficulty: "Beginner" }
+    ]
+  }
+];
+
+// Expose for app.js (works when loaded via <script> in the browser).
+if (typeof window !== "undefined") {
+  window.LEARNING_PATH = LEARNING_PATH;
+}
+
+  </script>
+  <script>
+/*
+ * app.js — Skill Tracker logic
+ *
+ * Stores progress in localStorage under STORAGE_KEY. The saved shape is:
+ *   {
+ *     version: 1,
+ *     items: { "<itemId>": { status, notes, link } },
+ *     ui:    { collapsed: { "<catId>": true } }
+ *   }
+ *
+ * itemId is derived from category + item position in data.js, so progress
+ * stays attached to the right task as long as the learning path order is kept.
+ */
+
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "skillTracker.v1";
+
+  // Status definitions in learning order. weight feeds the progress bars.
+  const STATUSES = [
+    { key: "NotStarted", label: "Not Started", weight: 0 },
+    { key: "Learning", label: "Learning", weight: 0.34 },
+    { key: "Practicing", label: "Practicing", weight: 0.67 },
+    { key: "Confident", label: "Confident", weight: 1 }
+  ];
+  const statusLabel = (key) =>
+    (STATUSES.find((s) => s.key === key) || STATUSES[0]).label;
+  const statusWeight = (key) =>
+    (STATUSES.find((s) => s.key === key) || STATUSES[0]).weight;
+
+  const path = window.LEARNING_PATH || [];
+
+  // ---- State -----------------------------------------------------------
+
+  let state = loadState();
+
+  function defaultState() {
+    return { version: 1, items: {}, ui: { collapsed: {} } };
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      if (!parsed.items) parsed.items = {};
+      if (!parsed.ui) parsed.ui = { collapsed: {} };
+      if (!parsed.ui.collapsed) parsed.ui.collapsed = {};
+      return parsed;
+    } catch (e) {
+      console.warn("Could not load saved progress, starting fresh.", e);
+      return defaultState();
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error("Could not save progress.", e);
+      toast("Warning: progress could not be saved.");
+    }
+  }
+
+  // Get (and lazily create) the record for an item.
+  function rec(itemId) {
+    if (!state.items[itemId]) {
+      state.items[itemId] = { status: "NotStarted", notes: "", link: "" };
+    }
+    return state.items[itemId];
+  }
+
+  function catId(ci) {
+    return "c" + ci;
+  }
+  function itemId(ci, ii) {
+    return "c" + ci + "-i" + ii;
+  }
+
+  // ---- Progress helpers ------------------------------------------------
+
+  function categoryProgress(ci) {
+    const items = path[ci].items;
+    if (!items.length) return { pct: 0, confident: 0, total: 0, weighted: 0 };
+    let confident = 0;
+    let weighted = 0;
+    items.forEach((_, ii) => {
+      const r = rec(itemId(ci, ii));
+      weighted += statusWeight(r.status);
+      if (r.status === "Confident") confident++;
+    });
+    return {
+      pct: Math.round((weighted / items.length) * 100),
+      confident,
+      total: items.length,
+      weighted
+    };
+  }
+
+  function overallProgress() {
+    let totalItems = 0;
+    let weighted = 0;
+    let confident = 0;
+    path.forEach((cat, ci) => {
+      cat.items.forEach((_, ii) => {
+        totalItems++;
+        const r = rec(itemId(ci, ii));
+        weighted += statusWeight(r.status);
+        if (r.status === "Confident") confident++;
+      });
+    });
+    return {
+      pct: totalItems ? Math.round((weighted / totalItems) * 100) : 0,
+      confident,
+      total: totalItems
+    };
+  }
+
+  // First incomplete (not Confident) task in learning order. Skips the
+  // recurring weekly category so it doesn't dominate recommendations.
+  function findNextTasks(limit) {
+    const out = [];
+    for (let ci = 0; ci < path.length; ci++) {
+      if (path[ci].type === "weekly") continue;
+      const cat = path[ci];
+      for (let ii = 0; ii < cat.items.length; ii++) {
+        const r = rec(itemId(ci, ii));
+        if (r.status !== "Confident") {
+          out.push({ ci, ii, task: cat.items[ii].task, catName: cat.name });
+          if (limit && out.length >= limit) return out;
+        }
+      }
+    }
+    return out;
+  }
+
+  // ---- Rendering -------------------------------------------------------
+
+  const elCategories = document.getElementById("categories");
+
+  function render() {
+    elCategories.innerHTML = "";
+    path.forEach((cat, ci) => elCategories.appendChild(renderCategory(cat, ci)));
+    updateProgressUI();
+    applySearch();
+  }
+
+  function renderCategory(cat, ci) {
+    const wrap = document.createElement("section");
+    wrap.className = "category";
+    wrap.dataset.ci = ci;
+    if (state.ui.collapsed[catId(ci)]) wrap.classList.add("collapsed");
+
+    const prog = categoryProgress(ci);
+
+    const header = document.createElement("div");
+    header.className = "cat-header";
+    header.innerHTML = `
+      <span class="cat-caret">▾</span>
+      <div class="cat-title-wrap">
+        <div class="cat-title">${escapeHtml(cat.name)}</div>
+        <div class="cat-goal">${escapeHtml(cat.goal)}</div>
+      </div>
+      <div class="cat-progress-wrap">
+        <div class="cat-progress-bar"><div class="cat-progress-fill" style="width:${prog.pct}%"></div></div>
+        <span class="cat-pct">${prog.pct}%</span>
+      </div>`;
+    header.addEventListener("click", () => toggleCategory(ci, wrap));
+    wrap.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "cat-body";
+
+    if (cat.type === "weekly") {
+      const resetWrap = document.createElement("div");
+      resetWrap.className = "weekly-reset";
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.textContent = "Reset weekly checklist";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        resetWeekly(ci);
+      });
+      resetWrap.appendChild(btn);
+      body.appendChild(resetWrap);
+    }
+
+    cat.items.forEach((item, ii) => body.appendChild(renderItem(cat, ci, item, ii)));
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  function renderItem(cat, ci, item, ii) {
+    const id = itemId(ci, ii);
+    const r = rec(id);
+
+    const el = document.createElement("div");
+    el.className = "item";
+    el.dataset.id = id;
+    el.dataset.task = item.task.toLowerCase();
+    if (r.status === "Confident") el.classList.add("done");
+
+    // checkbox
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.className = "item-check";
+    check.checked = r.status === "Confident";
+    check.title = "Mark as Confident / done";
+    check.addEventListener("change", () => {
+      setStatus(id, check.checked ? "Confident" : "NotStarted");
+    });
+
+    // content
+    const content = document.createElement("div");
+    content.className = "item-content";
+
+    const taskLine = document.createElement("div");
+    taskLine.className = "item-task";
+    taskLine.textContent = item.task;
+    content.appendChild(taskLine);
+
+    const tags = document.createElement("div");
+    tags.className = "item-tags";
+    tags.innerHTML = `
+      <span class="badge diff-${item.difficulty}">${item.difficulty}</span>
+      <span class="badge status-badge status-${r.status}" data-role="statusBadge">${statusLabel(r.status)}</span>`;
+    const expandBtn = document.createElement("button");
+    expandBtn.className = "btn-expand";
+    expandBtn.textContent = hasDetails(r) ? "Notes ✎" : "Notes +";
+    tags.appendChild(expandBtn);
+    content.appendChild(tags);
+
+    // details
+    const details = document.createElement("div");
+    details.className = "item-details collapsed";
+    details.innerHTML = `
+      <div class="detail-row">
+        <div>
+          <label class="field-label">Status</label>
+          <select class="status-select" data-role="statusSelect"></select>
+        </div>
+        <div>
+          <label class="field-label">Resource / link (optional)</label>
+          <input type="url" class="text-input" data-role="link" placeholder="https://..." />
+          <a class="resource-link" data-role="linkPreview" target="_blank" rel="noopener"></a>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Notes</label>
+        <textarea class="text-input notes-input" data-role="notes" placeholder="What you learned, questions, links..."></textarea>
+      </div>`;
+
+    // populate status select
+    const sel = details.querySelector('[data-role="statusSelect"]');
+    STATUSES.forEach((s) => {
+      const opt = document.createElement("option");
+      opt.value = s.key;
+      opt.textContent = s.label;
+      if (s.key === r.status) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", () => setStatus(id, sel.value));
+
+    // notes
+    const notes = details.querySelector('[data-role="notes"]');
+    notes.value = r.notes || "";
+    notes.addEventListener("input", () => {
+      rec(id).notes = notes.value;
+      debouncedSave();
+    });
+
+    // link
+    const link = details.querySelector('[data-role="link"]');
+    const linkPreview = details.querySelector('[data-role="linkPreview"]');
+    link.value = r.link || "";
+    updateLinkPreview(linkPreview, r.link);
+    link.addEventListener("input", () => {
+      rec(id).link = link.value.trim();
+      updateLinkPreview(linkPreview, link.value.trim());
+      expandBtn.textContent = hasDetails(rec(id)) ? "Notes ✎" : "Notes +";
+      debouncedSave();
+    });
+
+    expandBtn.addEventListener("click", () => {
+      details.classList.toggle("collapsed");
+    });
+
+    const main = document.createElement("div");
+    main.className = "item-main";
+    main.appendChild(check);
+    main.appendChild(content);
+
+    el.appendChild(main);
+    el.appendChild(details);
+    return el;
+  }
+
+  function updateLinkPreview(anchor, url) {
+    if (url) {
+      anchor.textContent = url;
+      anchor.href = url;
+      anchor.style.display = "inline-block";
+    } else {
+      anchor.textContent = "";
+      anchor.removeAttribute("href");
+      anchor.style.display = "none";
+    }
+  }
+
+  function hasDetails(r) {
+    return (r.notes && r.notes.trim()) || (r.link && r.link.trim());
+  }
+
+  // ---- Mutations -------------------------------------------------------
+
+  function setStatus(id, status) {
+    rec(id).status = status;
+    saveState();
+    refreshItem(id);
+    updateProgressUI();
+  }
+
+  // Update a single item's visible bits without a full re-render.
+  function refreshItem(id) {
+    const el = elCategories.querySelector(`.item[data-id="${id}"]`);
+    if (!el) return;
+    const r = rec(id);
+    el.classList.toggle("done", r.status === "Confident");
+
+    const check = el.querySelector(".item-check");
+    if (check) check.checked = r.status === "Confident";
+
+    const badge = el.querySelector('[data-role="statusBadge"]');
+    if (badge) {
+      badge.className = "badge status-badge status-" + r.status;
+      badge.textContent = statusLabel(r.status);
+    }
+    const sel = el.querySelector('[data-role="statusSelect"]');
+    if (sel) sel.value = r.status;
+  }
+
+  function updateProgressUI() {
+    const o = overallProgress();
+    document.getElementById("overallPct").textContent = o.pct + "%";
+    document.getElementById("overallFill").style.width = o.pct + "%";
+    document.getElementById("overallMeta").textContent =
+      `${o.confident} of ${o.total} tasks confident`;
+
+    // per-category bars
+    path.forEach((cat, ci) => {
+      const wrap = elCategories.querySelector(`.category[data-ci="${ci}"]`);
+      if (!wrap) return;
+      const prog = categoryProgress(ci);
+      const fill = wrap.querySelector(".cat-progress-fill");
+      const pct = wrap.querySelector(".cat-pct");
+      if (fill) fill.style.width = prog.pct + "%";
+      if (pct) pct.textContent = prog.pct + "%";
+    });
+
+    updateNextTaskCard();
+  }
+
+  function updateNextTaskCard() {
+    const next = findNextTasks(1);
+    const txt = document.getElementById("nextTaskText");
+    if (next.length) {
+      txt.textContent = next[0].task;
+    } else {
+      txt.textContent = "Everything is marked Confident! 🎉";
+    }
+  }
+
+  function toggleCategory(ci, wrap) {
+    wrap.classList.toggle("collapsed");
+    state.ui.collapsed[catId(ci)] = wrap.classList.contains("collapsed");
+    saveState();
+  }
+
+  function resetWeekly(ci) {
+    if (!confirm("Reset all weekly checklist items to Not Started?")) return;
+    path[ci].items.forEach((_, ii) => {
+      rec(itemId(ci, ii)).status = "NotStarted";
+    });
+    saveState();
+    render();
+    toast("Weekly checklist reset.");
+  }
+
+  // ---- Controls --------------------------------------------------------
+
+  function whatNext() {
+    const next = findNextTasks(1);
+    const card = document.getElementById("nextTaskCard");
+    if (!next.length) {
+      toast("No incomplete tasks — you're done!");
+      return;
+    }
+    const { ci } = next[0];
+    // expand the category and scroll the item into view
+    const wrap = elCategories.querySelector(`.category[data-ci="${ci}"]`);
+    if (wrap && wrap.classList.contains("collapsed")) toggleCategory(ci, wrap);
+    const el = elCategories.querySelector(`.item[data-id="${itemId(next[0].ci, next[0].ii)}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.style.transition = "background 0.4s";
+      el.style.background = "var(--accent-soft)";
+      setTimeout(() => (el.style.background = ""), 1200);
+    }
+    card.classList.remove("flash");
+    void card.offsetWidth; // restart animation
+    card.classList.add("flash");
+  }
+
+  let focusOn = false;
+  function toggleFocus() {
+    focusOn = !focusOn;
+    document.body.classList.toggle("focus-mode", focusOn);
+    document.getElementById("btnFocus").classList.toggle("active", focusOn);
+
+    // clear previous focus markers
+    elCategories.querySelectorAll(".focus-visible").forEach((e) => e.classList.remove("focus-visible"));
+    elCategories.querySelectorAll(".focus-item").forEach((e) => e.classList.remove("focus-item"));
+
+    if (focusOn) {
+      const next = findNextTasks(3);
+      if (!next.length) {
+        toast("Nothing left to focus on — all done!");
+        focusOn = false;
+        document.body.classList.remove("focus-mode");
+        document.getElementById("btnFocus").classList.remove("active");
+        return;
+      }
+      next.forEach((n) => {
+        const wrap = elCategories.querySelector(`.category[data-ci="${n.ci}"]`);
+        if (wrap) wrap.classList.add("focus-visible");
+        const el = elCategories.querySelector(`.item[data-id="${itemId(n.ci, n.ii)}"]`);
+        if (el) el.classList.add("focus-item");
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  function exportProgress() {
+    const data = JSON.stringify(state, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `skill-tracker-progress-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast("Progress exported.");
+  }
+
+  function importProgress(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (!parsed || typeof parsed !== "object" || !parsed.items) {
+          throw new Error("Not a valid progress file.");
+        }
+        if (!confirm("Importing will replace your current progress. Continue?")) return;
+        state = {
+          version: 1,
+          items: parsed.items || {},
+          ui: parsed.ui && parsed.ui.collapsed ? parsed.ui : { collapsed: {} }
+        };
+        saveState();
+        render();
+        toast("Progress imported.");
+      } catch (e) {
+        alert("Could not import file: " + e.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function resetAll() {
+    if (!confirm("Reset ALL progress, notes and links? This cannot be undone.")) return;
+    state = defaultState();
+    saveState();
+    render();
+    toast("Everything reset.");
+  }
+
+  // ---- Search ----------------------------------------------------------
+
+  function applySearch() {
+    const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+    elCategories.querySelectorAll(".item").forEach((el) => {
+      const match = !q || el.dataset.task.includes(q);
+      el.classList.toggle("hidden", !match);
+    });
+    // when searching, expand categories that have matches
+    if (q) {
+      elCategories.querySelectorAll(".category").forEach((wrap) => {
+        const anyVisible = wrap.querySelector(".item:not(.hidden)");
+        wrap.classList.toggle("collapsed", !anyVisible);
+      });
+    } else {
+      // restore saved collapse state
+      path.forEach((_, ci) => {
+        const wrap = elCategories.querySelector(`.category[data-ci="${ci}"]`);
+        if (wrap) wrap.classList.toggle("collapsed", !!state.ui.collapsed[catId(ci)]);
+      });
+    }
+  }
+
+  // ---- Utilities -------------------------------------------------------
+
+  let saveTimer = null;
+  function debouncedSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 400);
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => (t.hidden = true), 2200);
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ---- Focus banner injection -----------------------------------------
+
+  function injectFocusBanner() {
+    const banner = document.createElement("div");
+    banner.className = "focus-banner";
+    banner.innerHTML = `<span>Focus Mode — showing your next 3 tasks.</span>`;
+    const exit = document.createElement("button");
+    exit.className = "btn";
+    exit.textContent = "Exit Focus";
+    exit.addEventListener("click", toggleFocus);
+    banner.appendChild(exit);
+    elCategories.parentNode.insertBefore(banner, elCategories);
+  }
+
+  // ---- Wire up ---------------------------------------------------------
+
+  function init() {
+    if (!path.length) {
+      elCategories.innerHTML = "<p>Could not load learning path (data.js missing).</p>";
+      return;
+    }
+    injectFocusBanner();
+    render();
+
+    document.getElementById("btnNext").addEventListener("click", whatNext);
+    document.getElementById("btnFocus").addEventListener("click", toggleFocus);
+    document.getElementById("btnExport").addEventListener("click", exportProgress);
+    document.getElementById("btnReset").addEventListener("click", resetAll);
+
+    const importFile = document.getElementById("importFile");
+    document.getElementById("btnImport").addEventListener("click", () => importFile.click());
+    importFile.addEventListener("change", () => {
+      if (importFile.files && importFile.files[0]) importProgress(importFile.files[0]);
+      importFile.value = "";
+    });
+
+    const search = document.getElementById("searchInput");
+    search.addEventListener("input", applySearch);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+
+  </script>
+</body>
+</html>
