@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Responsive + iOS notch support. viewport-fit=cover lets us use safe-area insets. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <!-- iOS "Add to Home Screen" support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Skill Tracker" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Skill Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-top">
+      <h1>Skill Tracker</h1>
+      <p class="subtitle">Your path from student to employable engineer</p>
+    </div>
+
+    <!-- Overall progress -->
+    <div class="overall card">
+      <div class="overall-row">
+        <span class="overall-label">Overall progress</span>
+        <span class="overall-pct" id="overallPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="overallFill" style="width:0%"></div>
+      </div>
+      <div class="overall-meta" id="overallMeta">0 of 0 tasks confident</div>
+    </div>
+
+    <!-- Next recommended task -->
+    <div class="next-task card" id="nextTaskCard">
+      <span class="next-label">Next recommended task</span>
+      <span class="next-text" id="nextTaskText">All done! 🎉</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="btnNext" class="btn btn-primary">What should I do next?</button>
+      <button id="btnFocus" class="btn">Focus Mode</button>
+      <button id="btnExport" class="btn">Export</button>
+      <button id="btnImport" class="btn">Import</button>
+      <button id="btnReset" class="btn btn-danger">Reset</button>
+      <input type="file" id="importFile" accept="application/json" hidden />
+    </div>
+    <div class="search-row">
+      <input type="search" id="searchInput" class="search-input" placeholder="Search tasks..." />
+    </div>
+  </header>
+
+  <main id="categories"></main>
+
+  <footer class="app-footer">
+    <p>Progress is saved automatically in this browser (localStorage). Use Export to back it up.</p>
+  </footer>
+
+  <!-- Toast for small confirmations -->
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
