@@ -15,39 +15,51 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="header-top">
-      <h1>Skill Tracker</h1>
-      <p class="subtitle">Your path from student to employable engineer</p>
-    </div>
-
-    <!-- Overall progress -->
-    <div class="overall card">
-      <div class="overall-row">
-        <span class="overall-label">Overall progress</span>
-        <span class="overall-pct" id="overallPct">0%</span>
+    <!-- Hero: title + circular overall-progress ring -->
+    <div class="hero card">
+      <div class="hero-text">
+        <h1>Skill Tracker</h1>
+        <p class="subtitle">Student → employable engineer</p>
+        <div class="overall-meta" id="overallMeta">0 of 0 tasks confident</div>
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="overallFill" style="width:0%"></div>
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 120 120" class="ring-svg">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#6ea8ff"></stop>
+              <stop offset="55%" stop-color="#7c5cff"></stop>
+              <stop offset="100%" stop-color="#33d6a6"></stop>
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+          <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <span class="ring-pct" id="overallPct">0%</span>
       </div>
-      <div class="overall-meta" id="overallMeta">0 of 0 tasks confident</div>
     </div>
 
     <!-- Next recommended task -->
-    <div class="next-task card" id="nextTaskCard">
-      <span class="next-label">Next recommended task</span>
-      <span class="next-text" id="nextTaskText">All done! 🎉</span>
+    <div class="next-task" id="nextTaskCard">
+      <span class="next-icon">🧭</span>
+      <div class="next-body">
+        <span class="next-label">Next recommended task</span>
+        <span class="next-text" id="nextTaskText">All done! 🎉</span>
+      </div>
     </div>
 
-    <!-- Controls -->
+    <!-- Primary action -->
+    <button id="btnNext" class="btn btn-primary btn-cta">What should I do next?</button>
+
+    <!-- Secondary actions -->
     <div class="controls">
-      <button id="btnNext" class="btn btn-primary">What should I do next?</button>
-      <button id="btnFocus" class="btn">Focus Mode</button>
-      <button id="btnExport" class="btn">Export</button>
-      <button id="btnImport" class="btn">Import</button>
-      <button id="btnReset" class="btn btn-danger">Reset</button>
+      <button id="btnFocus" class="btn btn-ghost"><span class="bi">🎯</span>Focus</button>
+      <button id="btnExport" class="btn btn-ghost"><span class="bi">📤</span>Export</button>
+      <button id="btnImport" class="btn btn-ghost"><span class="bi">📥</span>Import</button>
+      <button id="btnReset" class="btn btn-ghost btn-danger"><span class="bi">🗑️</span>Reset</button>
       <input type="file" id="importFile" accept="application/json" hidden />
     </div>
     <div class="search-row">
+      <span class="search-icon">🔍</span>
       <input type="search" id="searchInput" class="search-input" placeholder="Search tasks..." />
     </div>
   </header>

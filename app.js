@@ -158,6 +158,7 @@
     header.className = "cat-header";
     header.innerHTML = `
       <span class="cat-caret">▾</span>
+      <span class="cat-icon">${escapeHtml(cat.icon || "•")}</span>
       <div class="cat-title-wrap">
         <div class="cat-title">${escapeHtml(cat.name)}</div>
         <div class="cat-goal">${escapeHtml(cat.goal)}</div>
@@ -340,10 +341,17 @@
     if (sel) sel.value = r.status;
   }
 
+  // Circumference of the ring (r=52): 2 * pi * 52
+  const RING_C = 2 * Math.PI * 52;
+
   function updateProgressUI() {
     const o = overallProgress();
     document.getElementById("overallPct").textContent = o.pct + "%";
-    document.getElementById("overallFill").style.width = o.pct + "%";
+    const ring = document.getElementById("ringFg");
+    if (ring) {
+      ring.style.strokeDasharray = RING_C.toFixed(1);
+      ring.style.strokeDashoffset = (RING_C * (1 - o.pct / 100)).toFixed(1);
+    }
     document.getElementById("overallMeta").textContent =
       `${o.confident} of ${o.total} tasks confident`;
 
