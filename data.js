@@ -26,6 +26,7 @@ const LEARNING_PATH = [
     name: "1. Coding Fundamentals",
     goal: "Become comfortable solving problems and writing code without relying on AI.",
     type: "skills",
+    icon: "🧱",
     items: [
       { task: "Python basics: variables, functions, loops, conditionals", difficulty: "Beginner" },
       { task: "Data structures: lists, dictionaries, sets, tuples", difficulty: "Beginner" },
@@ -57,6 +58,7 @@ const LEARNING_PATH = [
     name: "2. SQL and Databases",
     goal: "Understand how real applications store and retrieve data.",
     type: "skills",
+    icon: "🗄️",
     items: [
       { task: "What relational databases are", difficulty: "Beginner" },
       { task: "Tables, rows, columns", difficulty: "Beginner" },
@@ -80,6 +82,7 @@ const LEARNING_PATH = [
     name: "3. Backend Engineering",
     goal: "Build real APIs that can power applications.",
     type: "skills",
+    icon: "⚙️",
     items: [
       { task: "REST API basics", difficulty: "Beginner" },
       { task: "HTTP methods: GET, POST, PUT, PATCH, DELETE", difficulty: "Beginner" },
@@ -111,6 +114,7 @@ const LEARNING_PATH = [
     name: "4. Full-Stack Development",
     goal: "Connect a frontend to a real backend.",
     type: "skills",
+    icon: "🧩",
     items: [
       { task: "TypeScript basics", difficulty: "Intermediate" },
       { task: "React basics", difficulty: "Intermediate" },
@@ -134,6 +138,7 @@ const LEARNING_PATH = [
     name: "5. Cloud and Deployment",
     goal: "Ship projects properly instead of only running them locally.",
     type: "skills",
+    icon: "☁️",
     items: [
       { task: "Cloud basics", difficulty: "Beginner" },
       { task: "Linux basics", difficulty: "Beginner" },
@@ -164,6 +169,7 @@ const LEARNING_PATH = [
     name: "6. DevOps and Platform Skills",
     goal: "Learn how professional teams build, test, deploy, and monitor software.",
     type: "skills",
+    icon: "🚀",
     items: [
       { task: "CI/CD basics", difficulty: "Intermediate" },
       { task: "GitHub Actions basics", difficulty: "Intermediate" },
@@ -189,6 +195,7 @@ const LEARNING_PATH = [
     name: "7. Practical AI Engineering",
     goal: "Build useful AI features into real software.",
     type: "skills",
+    icon: "🤖",
     items: [
       { task: "How LLM APIs work", difficulty: "Beginner" },
       { task: "Prompt engineering basics", difficulty: "Beginner" },
@@ -216,6 +223,7 @@ const LEARNING_PATH = [
     name: "8. Portfolio Projects",
     goal: "Build proof that I can code, deploy, and explain systems.",
     type: "skills",
+    icon: "📦",
     items: [
       // Project 1: Full-stack Job Application Tracker
       { task: "Project 1 — Job Tracker: User signup/login", difficulty: "Intermediate" },
@@ -261,6 +269,7 @@ const LEARNING_PATH = [
     name: "9. Interview Preparation",
     goal: "Be ready for graduate/junior technical interviews.",
     type: "skills",
+    icon: "🎤",
     items: [
       { task: "Explain every project clearly", difficulty: "Intermediate" },
       { task: "Explain auth flow", difficulty: "Intermediate" },
@@ -290,6 +299,7 @@ const LEARNING_PATH = [
     name: "10. Weekly Discipline Tracker",
     goal: "Build consistency. Reset these each week using the button below.",
     type: "weekly",
+    icon: "📅",
     items: [
       { task: "Solve at least 5 coding problems", difficulty: "Beginner" },
       { task: "Make at least 5 GitHub commits", difficulty: "Beginner" },
