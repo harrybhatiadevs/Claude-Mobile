@@ -1,115 +1,139 @@
-# Skill Tracker
+# Developer Skill Tracker
 
-A clean, dark-themed, **local** checklist app that maps your path from
-soon-to-graduate CS student to employable Software / Backend / Cloud / DevOps /
-AI engineer. It tells you what to learn first → last, lets you tick off
-progress, and shows what to focus on next.
+A local-first, mobile-friendly web app for planning and tracking a path into software, backend, cloud, DevOps, and practical AI engineering.
 
-No backend, no dependencies to *use* it. The app ships as a single
-self-contained file, **`index.html`**, with all HTML/CSS/JS inlined — so it runs
-the same from GitHub Pages, a mobile browser, or a local file. Progress is saved
-automatically in your browser via `localStorage`.
+The tracker turns a large learning roadmap into ordered, manageable tasks. It runs as a single static page, stores progress in the browser, and needs no account, backend, build step, or dependency to use.
 
-📱 **On a phone?** See [`PHONE_SETUP.md`](PHONE_SETUP.md) for exact iPhone steps
-(GitHub Pages recommended).
+## Highlights
 
-## Features
+- 206 ordered skills and project tasks across ten categories
+- Four progress states: Not Started, Learning, Practising, and Confident
+- Weighted overall and category progress
+- “What should I do next?” recommendation based on roadmap order
+- Focus Mode that reduces the interface to the next three tasks
+- Search, collapsible sections, difficulty labels, notes, and resource links
+- Weekly discipline checklist with an independent reset
+- JSON export and import for portable backups
+- Responsive interface designed for desktop and mobile
+- Browser-only persistence with `localStorage`
 
-- **10 ordered categories** with 206 skills/tasks, in a fixed learn-first → last order:
-  1. Coding Fundamentals
-  2. SQL and Databases
-  3. Backend Engineering
-  4. Full-Stack Development
-  5. Cloud and Deployment
-  6. DevOps and Platform Skills
-  7. Practical AI Engineering
-  8. Portfolio Projects (3 projects, broken into required features)
-  9. Interview Preparation
-  10. Weekly Discipline Tracker (recurring, with a per-week reset button)
-- **Collapsible category sections**, each with its own progress bar.
-- **Overall progress** percentage and bar across everything.
-- **Status per task** — *Not Started → Learning → Practicing → Confident* —
-  via a checkbox (quick "done") and a status dropdown. Progress bars are
-  weighted so partial learning still moves the needle.
-- **Difficulty badges** — Beginner / Intermediate / Advanced.
-- **Notes** and an optional **resource/link** field for every task.
-- **"What should I do next?"** — jumps to and highlights the first incomplete
-  task in the recommended order.
-- **Focus Mode** — hides everything except your next 3 incomplete tasks.
-- **Search** — filter tasks by keyword.
-- **Export / Import** progress as JSON (good for backups or moving devices).
-- **Reset** — wipe all progress, notes, and links.
+## Tech stack
 
-## How to run it locally
+| Area | Technology |
+| --- | --- |
+| Structure | Semantic HTML |
+| Styling | Responsive CSS |
+| Behaviour | Vanilla JavaScript |
+| Persistence | `localStorage` |
+| Packaging | Small Node.js build script |
+| Deployment | Any static host, including GitHub Pages |
 
-You only need a browser. There are two easy options.
+## Architecture
 
-### Option A — just open the file
-Double-click `index.html`, or open it in your browser:
-
-```
-file:///path/to/Claude-Mobile/index.html
+```mermaid
+flowchart LR
+    DATA["data.js<br/>learning roadmap"] --> BUILD["build.js"]
+    APP["app.js<br/>state and UI"] --> BUILD
+    CSS["styles.css"] --> BUILD
+    TEMPLATE["template.html"] --> BUILD
+    BUILD --> INDEX["index.html<br/>self-contained app"]
+    INDEX --> STORAGE[("Browser localStorage")]
 ```
 
-This works for everything (import/export included) in modern browsers.
+`index.html` is the deployable artifact. The source files remain separated for maintenance, and `build.js` inlines them into one file for simple hosting and offline use.
 
-### Option B — run a tiny local server (recommended)
-Some browsers are stricter with `file://`. Serving the folder avoids any edge
-cases and is the closest to "running on your phone over your home network".
+## Try it locally
 
-From the project folder:
+### Fastest option
+
+Clone the repository and open `index.html` in a modern browser:
 
 ```bash
-# Python 3 (already installed on most machines)
+git clone https://github.com/harrybhatiadevs/Claude-Mobile.git
+cd Claude-Mobile
+open index.html
+```
+
+On Windows, double-click `index.html` or run:
+
+```powershell
+start index.html
+```
+
+### Local server
+
+Serving the directory avoids stricter `file://` browser behaviour:
+
+```bash
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000> in your browser.
+Then open [http://localhost:8000](http://localhost:8000).
 
-To use it on your **phone**, make sure the phone is on the same Wi-Fi, find
-your laptop's local IP (e.g. `192.168.1.20`), and visit
-`http://192.168.1.20:8000` on the phone. Progress on the phone is stored in the
-phone's browser; use Export/Import to move progress between devices.
+## Using the tracker
 
-> Node alternative: `npx serve` (or any static file server) works too.
+1. Work through categories from top to bottom.
+2. Set a task to Learning, Practising, or Confident.
+3. Add notes and a useful reference link when needed.
+4. Use **What should I do next?** when choosing the next task.
+5. Turn on **Focus Mode** to display only the next three incomplete items.
+6. Export progress periodically as a JSON backup.
 
-## Using it day-to-day
+Progress belongs to the current browser and device. Use export/import to move it elsewhere or recover from cleared browser storage.
 
-- Tick the **checkbox** when you're confident with a task, or open **Notes**
-  (the button on each task) to set a finer status, jot notes, and paste a
-  resource link.
-- Hit **What should I do next?** whenever you're unsure — it always points to
-  the next thing in the recommended order.
-- Turn on **Focus Mode** when you just want today's next 3 tasks and nothing else.
-- Every Monday, scroll to **Weekly Discipline Tracker** and hit
-  **Reset weekly checklist** to start the week fresh.
-- **Export** every so often to back up your progress to a JSON file.
+## Development
 
-## Files
+The generated `index.html` should not be edited directly.
+
+```bash
+# Edit template.html, styles.css, data.js, or app.js
+node build.js
+```
+
+The build has no package dependencies; it uses Node's standard library.
+
+### File guide
 
 | File | Purpose |
 | --- | --- |
-| **`index.html`** | **The app.** Single self-contained file (CSS + data + logic inlined). This is what you open / what GitHub Pages serves. Generated by `build.js`. |
-| `template.html` | Editable HTML shell (references the source files below). |
-| `styles.css` | Dark theme and layout. |
-| `data.js` | The full learning path (categories, tasks, difficulty). Edit here to add tasks. |
-| `app.js` | App logic: rendering, progress, status, focus, export/import. |
-| `build.js` | Inlines `template.html` + `styles.css` + `data.js` + `app.js` → `index.html`. |
-| `PHONE_SETUP.md` | iPhone / GitHub Pages instructions. |
+| `template.html` | Maintainable page structure |
+| `styles.css` | Theme, components, and responsive layout |
+| `data.js` | Ordered categories, tasks, and difficulty levels |
+| `app.js` | Rendering, state, progress, focus, search, import/export |
+| `build.js` | Inlines the source into a deployable HTML file |
+| `index.html` | Generated single-file application |
+| `PHONE_SETUP.md` | Phone and GitHub Pages setup notes |
 
-### Editing the app
-`index.html` is **generated** — don't edit it by hand. Edit the source files
-(`template.html`, `styles.css`, `data.js`, `app.js`), then rebuild:
+## Data model
 
-```bash
-node build.js   # regenerates the self-contained index.html
+Saved progress is stored under `skillTracker.v1` and contains a record for each task:
+
+```json
+{
+  "items": {
+    "category-0-item-0": {
+      "status": "practising",
+      "notes": "Build another small example",
+      "link": "https://example.com/resource"
+    }
+  }
+}
 ```
 
-(Node is only needed to *rebuild*; using the tracker needs nothing but a browser.)
+Task identifiers are currently derived from their category and position. Adding new tasks to the end of a category is safer than inserting them in the middle because positional changes can shift existing saved records.
 
-### Customising the learning path
-Open `data.js` and add/edit items, then run `node build.js`. Keep the existing
-order where you can — the "next task" and "Focus Mode" features follow it
-top-to-bottom. Saved progress is keyed by each task's position, so inserting
-items in the middle will shift the saved status of items below it; adding to the
-end of a category is safest.
+## Engineering decisions
+
+- **No framework:** the interaction model is small enough for browser APIs and vanilla JavaScript.
+- **Local-first storage:** learning notes remain on the user's device and no account is required.
+- **Single-file deployment:** the built app is easy to open, share, cache, and host.
+- **Weighted status:** partial progress contributes without treating “Learning” as equivalent to “Confident.”
+- **Ordered recommendations:** the next-task engine follows the curated roadmap instead of choosing randomly.
+
+## Future improvements
+
+- Stable task IDs that survive roadmap reordering
+- Automated browser tests
+- Optional installable PWA support
+- Accessible drag-free roadmap customisation
+- Optional cross-device sync while preserving the local-first mode
